@@ -14,6 +14,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 const TELEGRAM_BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
 const CHAT_ID = "@ethluga";
@@ -33,6 +43,16 @@ export default function Home() {
     currentPage * depositsPerPage,
   );
 
+  const chartConfig = {
+    desktop: {
+      label: "Deposits",
+      color: "#2563eb",
+    },
+  } satisfies ChartConfig;
+
+  const [chartData, setChartData] = useState<
+    { blockNumber: number; depositsCount: number }[]
+  >([]);
   // Fetch deposits from Ethereum blockchain every 15 seconds
   useEffect(() => {
     async function fetchDeposits() {
@@ -91,6 +111,15 @@ export default function Home() {
     const interval = setInterval(fetchDeposits, 15000);
     return () => clearInterval(interval);
   }, [lastProcessedBlock]);
+
+  useEffect(() => {
+    const formattedChartData = deposits.map((deposit) => ({
+      blockNumber: deposit.blockNumber,
+      depositsCount: 1, // Each deposit counts as 1
+    }));
+
+    setChartData(formattedChartData);
+  }, [deposits]);
 
   // Save deposits to MongoDB everytime the deposits state changes
   useEffect(() => {
@@ -185,7 +214,6 @@ export default function Home() {
           )}
         </div>
       )}
-
       <div className="mt-5 flex justify-center">
         <Button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -204,6 +232,48 @@ export default function Home() {
         >
           Next
         </Button>
+      </div>
+      <div>
+        {deposits.length === 0 ? (
+          <div>
+            <h1 className="text-xl font-bold ml-5"></h1>
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-xl font-bold ml-5">Deposits Count</h1>
+            <div className="mt-5 flex justify-center w-[1000px]">
+              <ChartContainer
+                config={chartConfig}
+                className="min-h-[200px] w-full"
+              >
+                <BarChart accessibilityLayer data={chartData}>
+                  <CartesianGrid vertical={false} />
+
+                  <XAxis
+                    dataKey="blockNumber"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => `Blk ${value}`}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value} Deposits`}
+                  />
+
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Bar
+                    dataKey="depositsCount"
+                    fill="var(--color-desktop)"
+                    radius={4}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
