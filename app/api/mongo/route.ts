@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
-const uri = process.env.NEXT_PUBLIC_MONGODB_URI;
+const uri = process.env.MONGODB_URI;
 const dbName = "ethereum-tracker";
 
 export async function POST(request: NextRequest) {

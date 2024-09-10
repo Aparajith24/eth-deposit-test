@@ -3,17 +3,23 @@ import { ethers } from "ethers";
 import { Deposit } from "../types/eth";
 
 const settings = {
-  apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
+  apiKey: process.env.ALCHEMY_API_KEY,
   network: Network.ETH_MAINNET,
 };
 
 //setting up alchemy
 const alchemy = new Alchemy(settings);
-const beaconDepositContract = process.env.NEXT_PUBLIC_BEACON_DEPOSIT_CONTRACT;
+const beaconDepositContract = "0x00000000219ab540356cBB839Cbe05303d7705Fa";
 
 export async function getLatestBlockNumber(): Promise<number> {
   return await alchemy.core.getBlockNumber();
 }
+
+// ABI of the deposit function in the Beacon Deposit Contract
+const ABI = [
+  "function deposit(bytes48 pubkey, bytes32 withdrawal_credentials, uint64 amount, bytes96 signature, bytes32 index)",
+];
+const iface = new ethers.utils.Interface(ABI);
 
 //function to get the transactions
 export async function getDeposits(
@@ -33,7 +39,7 @@ export async function getDeposits(
       event.transactionHash,
     );
     const block = await alchemy.core.getBlock(event.blockNumber);
-
+    console.log(tx);
     //checking if the transaction, block and receipt are not null
     if (tx && block && receipt) {
       const inputData = tx.data;
@@ -49,7 +55,6 @@ export async function getDeposits(
           senderAddress: tx.from,
           gasUsed: receipt.gasUsed,
         };
-
         deposits.push(deposit);
       }
     }
@@ -59,5 +64,12 @@ export async function getDeposits(
 }
 
 function decodeDepositData(inputData: string): { amount: ethers.BigNumber }[] {
-  return [{ amount: ethers.BigNumber.from(0) }];
+  try {
+    const decodedData = iface.decodeFunctionData("deposit", inputData);
+    const amount = ethers.BigNumber.from(decodedData[4]);
+    return [{ amount }];
+  } catch (error) {
+    console.error("Error decoding deposit data:", error);
+    return [{ amount: ethers.BigNumber.from(0) }];
+  }
 }

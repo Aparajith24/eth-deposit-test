@@ -31,6 +31,12 @@ Develop a robust and efficient Ethereum Deposit Tracker to monitor and record ET
 2. **Logging:**
    - Add mechanisms to track errors and important events.
 
+### Telegram Alerts
+
+**Alerts:**
+   - Send Telegram alerts for every deposit.
+   - Alerts include amount, sender address, and timestamp.
+
 ## Setup and Usage
 
 1. **Clone the Repository:**
@@ -45,6 +51,24 @@ Develop a robust and efficient Ethereum Deposit Tracker to monitor and record ET
    ```bash
    npm install
    ```
+
+3. **Environment Variables:**
+
+   Create a `.env` file in the root directory and add the following environment variables:
+
+   ```bash
+   MONGODB_URI=<MongoDB URI>
+   TELEGRAM_BOT_TOKEN=<Telegram Bot Token>
+   BEACON_DEPOSIT_CONTRACT_ADDRESS=0x00000000219ab540356cBB839Cbe05303d7705Fa
+   TELEGRAM_CHAT_ID=<Telegram Chat ID>
+   ALCHEMY_API_KEY=<Alchemy API Key>
+   ```
+
+   - **MongoDB URI:** MongoDB connection string.
+   - **Telegram Bot Token:** Telegram Bot token.
+   - **Telegram Chat ID:** Telegram Chat ID.
+   - **Alchemy API Key:** Alchemy API key.
+   - **BEACON_DEPOSIT_CONTRACT_ADDRESS:** Address of the Beacon Deposit Contract.
 
 3. **Run the Application:**
 
